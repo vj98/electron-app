@@ -66,3 +66,70 @@ jobs:
         run: |
           npm run make
           gh release create "v${{ github.run_number }}" dist/* --title "Release v${{ github.run_number }}" --notes "Auto-generated release"
+aname: Electron App Build
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE20: true
+
+    strategy:
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-22.04]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Rebuild native modules
+        run: npx electron-rebuild
+
+      - name: Run build
+        run: npm run build
+
+      - name: Package application
+        run: npm run make
+
+      - name: Upload Artifacts
+        if: success()
+        uses: actions/upload-artifact@v3
+        with:
+          name: electron-artifacts
+          path: out/make/*
+
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE20: true
+    if: github.event_name == 'push'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Package and Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          npm run make
+          gh release create "v${{ github.run_number }}" dist/* --title "Release v${{ github.run_number }}" --notes "Auto-generated release"
