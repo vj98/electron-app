@@ -1,76 +1,45 @@
-name: Build and Publish
-on: [push, pull_request]
-
+name: Build
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE20: true
+
+on: [push, pull_request]
+
 jobs:
   build_on_linux:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v2
       - uses: actions/setup-node@v3
         with:
           node-version: "20"
           check-latest: true
-      - name: Install dependencies
+      - name: install dependencies
         run: npm install
-      - name: Install Python Distutils
-        if: runner.os == 'macOS'
-        run: brew install python@3.9 && python3.9 -m ensurepip && python3.9 -m pip install setuptools
-      - name: Build on Linux
+      - name: build
         run: npm run make -- --platform=linux --arch=x64
-      - name: Publish on Linux
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npm run publish
 
   build_on_mac:
-    runs-on: macOS-latest
+    runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v2
       - uses: actions/setup-node@v3
         with:
           node-version: "20"
           check-latest: true
-      - name: Install dependencies
+      - name: install dependencies
         run: npm install
-      - name: Install Python Distutils
-        if: runner.os == 'macOS'
-        run: brew install python@3.9 && python3.9 -m ensurepip && python3.9 -m pip install setuptools
-      - name: Build on MacOS
+      - name: build
         run: npm run make -- --platform=darwin --arch=x64
-      - name: Publish on MacOS
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npm run publish
 
   build_on_win:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v2
       - uses: actions/setup-node@v3
         with:
           node-version: "20"
           check-latest: true
-      - name: Install Node tools
-        run: npm install --global windows-build-tools@4.0.0
-      - name: Install Python Distutils
-        if: runner.os == 'macOS'
-        run: brew install python@3.9 && python3.9 -m ensurepip && python3.9 -m pip install setuptools --global --production windows-build-tools@4.0.0
-      - name: Install node-gyp
-        run: npm install --global node-gyp@latest
-      - name: Install Python Distutils
-        if: runner.os == 'macOS'
-        run: brew install python@3.9 && python3.9 -m ensurepip && python3.9 -m pip install setuptools --global node-gyp@latest
-
-      - name: Install dependencies
+      - name: install dependencies
         run: npm install
-      - name: Install Python Distutils
-        if: runner.os == 'macOS'
-        run: brew install python@3.9 && python3.9 -m ensurepip && python3.9 -m pip install setuptools
-      - name: Build on Windows
+      - name: build
         run: npm run make -- --platform=win32 --arch=x64
-      - name: Publish on Windows
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npm run publish
