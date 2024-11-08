@@ -52,7 +52,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: electron-artifacts
-          path: out/make/*
+          path: out/make/*/*.exe
 
   release:
     needs: build
@@ -78,5 +78,5 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          npm run make
+          npm run make -- --platform=win32 --arch=x64 --targets=@electron-forge/maker-squirrel --authors='Vijay' --version='1.0.0'
           gh release create "v${{ github.run_number }}" dist/* --title "Release v${{ github.run_number }}" --notes "Auto-generated release"
