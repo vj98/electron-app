@@ -47,9 +47,40 @@ jobs:
       - name: Package application
         run: npm run make -- --platform=win32 --arch=x64 --targets=@electron-forge/maker-squirrel --authors='Vijay' --version='1.0.0'
 
+      - name: List output files
+        run: ls -R out/make || echo "No files found"
+
       - name: Upload Artifacts
         if: success()
         uses: actions/upload-artifact@v3
         with:
           name: electron-artifacts
           path: out/make/**/*
+          if-no-files-found: warn
+
+  release:
+    needs: build
+    runs-on: ubuntu-22.04
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE20: true
+    if: github.event_name == 'push'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "20"
+          check-latest: true
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Package and Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          npm run make -- --platform=win32 --arch=x64 --targets=@electron-forge/maker-squirrel --authors='Vijay' --version='1.0.0'
+          gh release create "v${{ github.run_number }}" out/make/**/* --title "Release v${{ github.run_number }}" --notes "Auto-generated release"
