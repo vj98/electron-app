@@ -17,12 +17,12 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3 # Updated to v3 for Node.js 16 support
 
       - name: Set up Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3 # Updated to v3 for Node.js 16 support
         with:
-          node-version: "16" # Replace with your Node version if different
+          node-version: "16" # Specify Node.js version 16, compatible with Electron 23
 
       - name: Install dependencies
         run: npm install
@@ -31,7 +31,7 @@ jobs:
         run: npm run dist
 
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v3 # Ensure we're using the latest version here as well
         with:
           name: electron-app-${{ matrix.os }}
           path: dist
