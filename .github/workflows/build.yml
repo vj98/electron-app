@@ -24,21 +24,35 @@ jobs:
         with:
           node-version: "18"
 
+      - name: Install Python 3.10 and distutils (macOS only)
+        if: runner.os == 'macOS'
+        run: |
+          # Install Python 3.10
+          brew install python@3.10
+
+          # Ensure distutils is available
+          /opt/homebrew/bin/python3.10 -m ensurepip --upgrade
+          /opt/homebrew/bin/python3.10 -m pip install --upgrade pip setuptools
+
+          # Set Python for npm/node-gyp to use
+          npm config set python "/opt/homebrew/bin/python3.10"
+
       - name: Log Node and Python Versions
         run: |
           node -v
           npm -v
           python3 --version || echo "Python3 not found"
+          echo "Python path for node-gyp: $(npm config get python)"
 
-      - name: Install Dependencies
+      - name: Install Dependencies (with logging)
         run: |
           echo "Starting npm install..."
-          npm install
+          npm install > npm_install_log.txt 2>&1 || (cat npm_install_log.txt && exit 1)
 
-      - name: Build Application
+      - name: Build Application (with logging)
         run: |
           echo "Starting build..."
-          npm run dist
+          npm run dist > build_log.txt 2>&1 || (cat build_log.txt && exit 1)
 
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v3
