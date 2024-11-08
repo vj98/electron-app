@@ -19,23 +19,37 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v3
 
-      - name: Set up Node.js (using Node.js 18 for compatibility)
+      - name: Set up Node.js (use Node.js v18.17.0 for compatibility)
         uses: actions/setup-node@v3
         with:
-          node-version: "18"
+          node-version: "18.17.0" # Explicitly match your local Node.js version
 
-      - name: Install Python 3.10 and distutils (macOS only)
-        if: runner.os == 'macOS'
+      - name: Install Python 3.11 (macOS only)
+        if: matrix.os == 'macos-latest'
         run: |
-          # Install Python 3.10
-          brew install python@3.10
+          # Install Python 3.11 on macOS
+          brew install python@3.11
 
-          # Ensure distutils is available
-          /opt/homebrew/bin/python3.10 -m ensurepip --upgrade
-          /opt/homebrew/bin/python3.10 -m pip install --upgrade pip setuptools
+          # Ensure pip and setuptools are installed and updated
+          /opt/homebrew/bin/python3.11 -m ensurepip --upgrade
+          /opt/homebrew/bin/python3.11 -m pip install --upgrade pip setuptools
 
           # Set Python for npm/node-gyp to use
-          npm config set python "/opt/homebrew/bin/python3.10"
+          npm config set python "/opt/homebrew/bin/python3.11"
+
+      - name: Install Python 3.11 (Ubuntu only)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          # Install Python 3.11 on Ubuntu
+          sudo apt-get update
+          sudo apt-get install -y python3.11 python3.11-venv python3.11-distutils
+
+          # Ensure pip and setuptools are installed and updated
+          python3.11 -m ensurepip --upgrade
+          python3.11 -m pip install --upgrade pip setuptools
+
+          # Set Python for npm/node-gyp to use
+          npm config set python "/usr/bin/python3.11"
 
       - name: Log Node and Python Versions
         run: |
