@@ -22,7 +22,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: "20" # Specify Node.js version
+          node-version: "18" # Downgrade to Node.js 18 for compatibility with node-pty
 
       - name: Install Python and set up virtual environment (macOS only)
         if: runner.os == 'macOS'
@@ -37,7 +37,13 @@ jobs:
           source venv/bin/activate
           pip install --upgrade pip setuptools
 
+          # Ensure `node-gyp` uses this Python version
+          echo "PYTHON=$(pwd)/venv/bin/python3.10" >> $GITHUB_ENV
+
       - name: Install dependencies
+        env:
+          # Set Python environment variable for node-gyp
+          PYTHON: "$(pwd)/venv/bin/python3.10"
         run: npm install
 
       - name: Build application with electron-builder
