@@ -16,7 +16,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [macos-latest, windows-latest, ubuntu-22.04]
+        os: [macos-latest, windows-latest, ubuntu-latest]
 
     steps:
       - name: Checkout repository
@@ -38,7 +38,7 @@ jobs:
         run: npm run build
 
       - name: Package application
-        run: npm run make
+        run: npm run make -- --platform=linux,win32,darwin
 
       - name: Upload Artifacts
         if: success()
