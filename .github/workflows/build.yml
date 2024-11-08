@@ -1,6 +1,5 @@
 name: Build Electron App
 
-# Define the events that trigger the workflow
 on:
   push:
     branches:
@@ -25,14 +24,18 @@ jobs:
         with:
           node-version: "20" # Specify Node.js version
 
-      - name: Install Python with distutils (macOS only)
+      - name: Install Python and set up virtual environment (macOS only)
         if: runner.os == 'macOS'
         run: |
+          # Install Python 3.10
           brew install python@3.10
-          echo 'export PATH="/opt/homebrew/opt/python@3.10/bin:$PATH"' >> ~/.zshrc
-          source ~/.zshrc
-          python3 -m ensurepip --upgrade
-          python3 -m pip install --upgrade pip setuptools
+
+          # Create a virtual environment
+          /opt/homebrew/bin/python3.10 -m venv venv
+
+          # Activate the virtual environment and install required packages
+          source venv/bin/activate
+          pip install --upgrade pip setuptools
 
       - name: Install dependencies
         run: npm install
