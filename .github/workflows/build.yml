@@ -1,86 +1,96 @@
-name: Electron App Build
-
+name: CI
 on:
   push:
     branches:
-      - main
-  pull_request:
-    branches:
-      - main
+      - electron
 
 jobs:
-  build:
-    runs-on: ubuntu-22.04
-    env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE20: true
-
-    strategy:
-      matrix:
-        os: [windows-latest]
-        arch: [x64]
-
+  build_on_mac:
+    runs-on: macOS-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
+      - uses: actions/checkout@v3
+        with:
+          ref: electron
+      - uses: actions/setup-node@v3
         with:
           node-version: "20"
           check-latest: true
-
+      - name: See directory in electron_dist
+        run: ls ./electron
+      - name: Add key to single keychain
+        run: security import ./electron/june-ai-single2-certs-electron.p12 -P ${{ secrets.CSC_KEY_PASSWORD }}
+      - name: Electron macOS security identities
+        run: security find-identity -v
       - name: Install dependencies
-        run: npm install
-
-      - name: Rebuild native modules
-        run: npx electron-rebuild
-
-      - name: Run build
-        run: npm run build
-
-      - name: Install Squirrel Maker
-        run: npm install --save-dev @electron-forge/maker-squirrel
-
-      - name: Install Mono and Wine
-        run: sudo apt-get update && sudo apt-get install -y mono-complete wine
-
-      - name: Package application
-        run: npm run make -- --platform=win32 --arch=x64 --targets=@electron-forge/maker-squirrel --authors='Vijay' --version='1.0.0'
-
-      - name: List output files
-        run: ls -R out/make || echo "No files found"
-
-      - name: Upload Artifacts
-        if: success()
-        uses: actions/upload-artifact@v3
-        with:
-          name: electron-artifacts
-          path: out/make/**/*
-          if-no-files-found: warn
-
-  release:
-    needs: build
-    runs-on: ubuntu-22.04
-    env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE20: true
-    if: github.event_name == 'push'
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: "20"
-          check-latest: true
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Package and Release
+        run: yarn install
+      - name: Build on MacOS
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          npm run make -- --platform=win32 --arch=x64 --targets=@electron-forge/maker-squirrel --authors='Vijay' --version='1.0.0'
-          gh release create "v${{ github.run_number }}" out/make/**/* --title "Release v${{ github.run_number }}" --notes "Auto-generated release"
+          ELECTRON: true
+          APP_VERSION_NUMBER: 0.5.9
+        run: yarn build
+      - name: Build Electron
+        env:
+          ELECTRON: true
+          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+          APP_VERSION_NUMBER: 0.5.9
+        run: yarn electron:buildUnix
+      - name: See directory
+        run: ls
+      - name: Check environment variables
+        run: echo $ELECTRON $FEATHERS_URL
+      - name: See directory in electron_dist
+        run: ls ./electron_dist
+      - uses: lucyio/upload-to-release@master
+        with:
+          name: lucyio/electron
+          path: ./electron_dist
+          action: unpublished
+          release_id: 0.x.x
+          release-repo: lucyio/electron
+
+  build_on_win:
+    runs-on: windows-2016
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: feature/github-actions
+      - uses: actions/setup-node@v3
+        with:
+          node-version: "20"
+          check-latest: true
+      - name: Install Node tools
+        run: npm install --global --production windows-build-tools@4.0.0
+      - name: Install node-gyp
+        run: npm install --global node-gyp@latest
+      - name: Set Node config to use Python 2.7
+        run: npm config set python python2.7
+      - name: Set Node config to MSVS version 2015
+        run: npm config set msvs_version 2015
+      - name: Workaround for Windows Server 2019
+        run: set path=%path%;C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Current\Bin
+      - name: Install dependencies
+        run: yarn install
+      - name: Check environment variables
+        env:
+          ELECTRON: true
+          APP_VERSION_NUMBER: 0.5.9
+        run: set
+      - name: Build on Windows
+        env:
+          ELECTRON: true
+          APP_VERSION_NUMBER: 0.5.9
+        run: yarn build
+      - name: Build Electron
+        env:
+          ELECTRON: true
+          APP_VERSION_NUMBER: 0.5.9
+        run: yarn electron:buildWin
+      - name: See directory in squirrel-windows
+        run: ls ./electron_dist/squirrel-windows
+      - uses: lucyio/upload-to-release@master
+        with:
+          name: lucyio/electron
+          path: ./electron_dist/squirrel-windows
+          action: unpublished
+          release_id: 0.5.9
+          release-repo: lucyio/electron
