@@ -19,40 +19,28 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v3
 
-      - name: Set up Node.js (use Node.js 18)
+      - name: Set up Node.js (using Node.js 18 for compatibility)
         uses: actions/setup-node@v3
         with:
-          node-version: "18" # Use Node.js 18 for compatibility with node-pty
+          node-version: "18"
 
-      - name: Install Python with distutils (macOS and Ubuntu)
-        if: matrix.os != 'windows-latest'
+      - name: Log Node and Python Versions
         run: |
-          if [[ ${{ matrix.os }} == 'macos-latest' ]]; then
-            # Install Python 3.10 and create a virtual environment on macOS
-            brew install python@3.10
-            /opt/homebrew/bin/python3.10 -m venv venv
-            source venv/bin/activate
-          else
-            # Install Python 3.10 and venv on Ubuntu
-            sudo apt-get update
-            sudo apt-get install -y python3.10 python3.10-venv
-            python3.10 -m venv venv
-            source venv/bin/activate
-          fi
-          # Upgrade pip and setuptools within the virtual environment
-          pip install --upgrade pip setuptools
-          echo "PYTHON=$(pwd)/venv/bin/python" >> $GITHUB_ENV
+          node -v
+          npm -v
+          python3 --version || echo "Python3 not found"
 
-      - name: Install dependencies
-        env:
-          # Use the correct Python path for node-gyp
-          PYTHON: "$(pwd)/venv/bin/python"
-        run: npm install
+      - name: Install Dependencies
+        run: |
+          echo "Starting npm install..."
+          npm install
 
-      - name: Build application with electron-builder
-        run: npm run dist
+      - name: Build Application
+        run: |
+          echo "Starting build..."
+          npm run dist
 
-      - name: Upload build artifacts
+      - name: Upload Build Artifacts
         uses: actions/upload-artifact@v3
         with:
           name: electron-app-${{ matrix.os }}
