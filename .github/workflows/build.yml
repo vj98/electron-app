@@ -26,7 +26,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '20'
+          node-version: "20"
           check-latest: true
 
       - name: Install dependencies
@@ -38,10 +38,10 @@ jobs:
       - name: Run build
         run: npm run build
 
-            - name: Install Squirrel Maker
-      run: npm install --save-dev @electron-forge/maker-squirrel
+      - name: Install Squirrel Maker
+        run: npm install --save-dev @electron-forge/maker-squirrel
 
-          - name: Package application
+      - name: Package application
         run: npm run make -- --platform=win32 --arch=x64 --targets=@electron-forge/maker-squirrel
 
       - name: Upload Artifacts
@@ -65,7 +65,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '20'
+          node-version: "20"
           check-latest: true
 
       - name: Install dependencies
