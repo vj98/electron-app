@@ -10,13 +10,13 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE20: true
 
     strategy:
       matrix:
-        os: [macos-latest, windows-latest, ubuntu-latest]
+        os: [macos-latest, windows-latest, ubuntu-22.04]
 
     steps:
       - name: Checkout repository
@@ -38,7 +38,7 @@ jobs:
         run: npm run build
 
       - name: Package application
-        run: npm run make -- --platform=linux,win32,darwin
+        run: npm run make -- --platform=linux --platform=win32 --platform=darwin
 
       - name: Upload Artifacts
         if: success()
@@ -49,7 +49,7 @@ jobs:
 
   release:
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE20: true
     if: github.event_name == 'push'
