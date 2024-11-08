@@ -38,10 +38,10 @@ jobs:
       - name: Run build
         run: npm run build
 
-      - - name: Install Squirrel Maker
+            - name: Install Squirrel Maker
       run: npm install --save-dev @electron-forge/maker-squirrel
 
-    - name: Package application
+          - name: Package application
         run: npm run make -- --platform=win32 --arch=x64 --targets=@electron-forge/maker-squirrel
 
       - name: Upload Artifacts
