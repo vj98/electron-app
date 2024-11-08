@@ -1,59 +1,37 @@
-name: CI
-on:
-  push:
-    branches:
-      - main
+name: Build
+on: [push, pull_request]
 
 jobs:
-  build_on_mac:
-    runs-on: macOS-latest
+  build_on_linux:
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-        with:
-          ref: electron
       - uses: actions/setup-node@v3
         with:
           node-version: "20"
           check-latest: true
-      - name: See directory in electron_dist
-        run: ls ./electron
-      - name: Add key to single keychain
-        run: security import ./electron/june-ai-single2-certs-electron.p12 -P ${{ secrets.CSC_KEY_PASSWORD }}
-      - name: Electron macOS security identities
-        run: security find-identity -v
       - name: Install dependencies
-        run: yarn install
-      - name: Build on MacOS
-        env:
-          ELECTRON: true
-          APP_VERSION_NUMBER: 0.5.9
-        run: yarn build
-      - name: Build Electron
-        env:
-          ELECTRON: true
-          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
-          APP_VERSION_NUMBER: 0.5.9
-        run: yarn electron:buildUnix
-      - name: See directory
-        run: ls
-      - name: Check environment variables
-        run: echo $ELECTRON $FEATHERS_URL
-      - name: See directory in electron_dist
-        run: ls ./electron_dist
-      - uses: lucyio/upload-to-release@master
-        with:
-          name: lucyio/electron
-          path: ./electron_dist
-          action: unpublished
-          release_id: 0.x.x
-          release-repo: lucyio/electron
+        run: npm install
+      - name: Build on Linux
+        run: npm run make
 
-  build_on_win:
-    runs-on: windows-2016
+  build_on_mac:
+    runs-on: macOS-latest
     steps:
       - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
         with:
-          ref: feature/github-actions
+          node-version: "20"
+          check-latest: true
+      - name: Install dependencies
+        run: npm install
+      - name: Build on MacOS
+        run: npm run make
+
+  build_on_win:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
           node-version: "20"
@@ -66,31 +44,7 @@ jobs:
         run: npm config set python python2.7
       - name: Set Node config to MSVS version 2015
         run: npm config set msvs_version 2015
-      - name: Workaround for Windows Server 2019
-        run: set path=%path%;C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Current\Bin
       - name: Install dependencies
-        run: yarn install
-      - name: Check environment variables
-        env:
-          ELECTRON: true
-          APP_VERSION_NUMBER: 0.5.9
-        run: set
+        run: npm install
       - name: Build on Windows
-        env:
-          ELECTRON: true
-          APP_VERSION_NUMBER: 0.5.9
-        run: yarn build
-      - name: Build Electron
-        env:
-          ELECTRON: true
-          APP_VERSION_NUMBER: 0.5.9
-        run: yarn electron:buildWin
-      - name: See directory in squirrel-windows
-        run: ls ./electron_dist/squirrel-windows
-      - uses: lucyio/upload-to-release@master
-        with:
-          name: lucyio/electron
-          path: ./electron_dist/squirrel-windows
-          action: unpublished
-          release_id: 0.5.9
-          release-repo: lucyio/electron
+        run: npm run make
