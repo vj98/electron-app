@@ -17,6 +17,7 @@ jobs:
     strategy:
       matrix:
         os: [windows-latest]
+        arch: [x64]
 
     steps:
       - name: Checkout repository
@@ -38,7 +39,7 @@ jobs:
         run: npm run build
 
       - name: Package application
-        run: npm run make -- --platform=win32
+        run: npm run make -- --platform=win32 --arch=x64
 
       - name: Upload Artifacts
         if: success()
