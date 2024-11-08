@@ -1,45 +1,44 @@
-name: Electron App Build
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE20: true
+name: Build Electron App for Windows
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
-  build_on_linux:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v3
-        with:
-          node-version: "20"
-          check-latest: true
-      - name: install dependencies
-        run: npm install
-      - name: build
-        run: npm run make -- --platform=linux --arch=x64
-
-  build_on_mac:
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v3
-        with:
-          node-version: "20"
-          check-latest: true
-      - name: install dependencies
-        run: npm install
-      - name: build
-        run: npm run make -- --platform=darwin --arch=x64
-
-  build_on_win:
+  build:
     runs-on: windows-latest
+
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v3
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
         with:
-          node-version: "20"
-          check-latest: true
-      - name: install dependencies
+          node-version: 18
+
+      - name: Install Dependencies
         run: npm install
-      - name: build
-        run: npm run make -- --platform=win32 --arch=x64
+
+      - name: Rebuild Electron Modules
+        run: npx electron-rebuild
+
+      - name: Run Build
+        run: npm run build
+
+      - name: Package Electron App
+        run: npm run dist
+
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: ElectronAppDist
+          path: dist/**
+
+    env:
+      ELECTRON_CACHE: "C:\\electron_cache"
+      ELECTRON_BUILDER_CACHE: "C:\\electron_builder_cache"
