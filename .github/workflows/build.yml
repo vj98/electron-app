@@ -45,7 +45,7 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y mono-complete wine
 
       - name: Package application
-        run: npm run make -- --platform=win32 --arch=x64 --targets=@electron-forge/maker-squirrel --authors='Vijay'
+        run: npm run make -- --platform=win32 --arch=x64 --targets=@electron-forge/maker-squirrel --authors='Vijay' --version='1.0.0'
 
       - name: Upload Artifacts
         if: success()
