@@ -1,86 +1,45 @@
 name: Electron App Build
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE20: true
 
-on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
+on: [push, pull_request]
 
 jobs:
-  build:
-    runs-on: ubuntu-22.04
-    env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE20: true
-
-    strategy:
-      matrix:
-        os: [windows-latest]
-        arch: [x64]
-
+  build_on_linux:
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v3
         with:
           node-version: "20"
           check-latest: true
-
-      - name: Install dependencies
+      - name: install dependencies
         run: npm install
+      - name: build
+        run: npm run make -- --platform=linux --arch=x64
 
-      - name: Rebuild native modules
-        run: npx electron-rebuild
-
-      - name: Run build
-        run: npm run build
-
-      - name: Install Squirrel Maker
-        run: npm install --save-dev @electron-forge/maker-squirrel
-
-      - name: Install Mono and Wine
-        run: sudo apt-get update && sudo apt-get install -y mono-complete wine
-
-      - name: Package application
-        run: npm run make -- --platform=win32 --arch=x64 --targets=@electron-forge/maker-squirrel --authors='Vijay' --version='1.0.0'
-
-      - name: List output files
-        run: ls -R out/make || echo "No files found"
-
-      - name: Upload Artifacts
-        if: success()
-        uses: actions/upload-artifact@v3
-        with:
-          name: electron-artifacts
-          path: out/make/**/*
-          if-no-files-found: warn
-
-  release:
-    needs: build
-    runs-on: ubuntu-22.04
-    env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE20: true
-    if: github.event_name == 'push'
-
+  build_on_mac:
+    runs-on: macos-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v3
         with:
           node-version: "20"
           check-latest: true
-
-      - name: Install dependencies
+      - name: install dependencies
         run: npm install
+      - name: build
+        run: npm run make -- --platform=darwin --arch=x64
 
-      - name: Package and Release
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          npm run make -- --platform=win32 --arch=x64 --targets=@electron-forge/maker-squirrel --authors='Vijay' --version='1.0.0'
-          gh release create "v${{ github.run_number }}" out/make/**/* --title "Release v${{ github.run_number }}" --notes "Auto-generated release"
+  build_on_win:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v3
+        with:
+          node-version: "20"
+          check-latest: true
+      - name: install dependencies
+        run: npm install
+      - name: build
+        run: npm run make -- --platform=win32 --arch=x64
