@@ -19,31 +19,34 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v3
 
-      - name: Set up Node.js
+      - name: Set up Node.js (use Node.js 18)
         uses: actions/setup-node@v3
         with:
-          node-version: "18" # Downgrade to Node.js 18 for compatibility with node-pty
+          node-version: "18" # Use Node.js 18 for compatibility with node-pty
 
-      - name: Install Python and set up virtual environment (macOS only)
-        if: runner.os == 'macOS'
+      - name: Install Python with distutils (macOS and Ubuntu)
+        if: matrix.os != 'windows-latest'
         run: |
-          # Install Python 3.10
-          brew install python@3.10
-
-          # Create a virtual environment
-          /opt/homebrew/bin/python3.10 -m venv venv
-
-          # Activate the virtual environment and install required packages
-          source venv/bin/activate
+          if [[ ${{ matrix.os }} == 'macos-latest' ]]; then
+            # Install Python 3.10 and create a virtual environment on macOS
+            brew install python@3.10
+            /opt/homebrew/bin/python3.10 -m venv venv
+            source venv/bin/activate
+          else
+            # Install Python 3.10 and venv on Ubuntu
+            sudo apt-get update
+            sudo apt-get install -y python3.10 python3.10-venv
+            python3.10 -m venv venv
+            source venv/bin/activate
+          fi
+          # Upgrade pip and setuptools within the virtual environment
           pip install --upgrade pip setuptools
-
-          # Ensure `node-gyp` uses this Python version
-          echo "PYTHON=$(pwd)/venv/bin/python3.10" >> $GITHUB_ENV
+          echo "PYTHON=$(pwd)/venv/bin/python" >> $GITHUB_ENV
 
       - name: Install dependencies
         env:
-          # Set Python environment variable for node-gyp
-          PYTHON: "$(pwd)/venv/bin/python3.10"
+          # Use the correct Python path for node-gyp
+          PYTHON: "$(pwd)/venv/bin/python"
         run: npm install
 
       - name: Build application with electron-builder
