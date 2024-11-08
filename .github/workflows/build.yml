@@ -40,5 +40,6 @@ jobs:
           path: dist/**
 
     env:
-      ELECTRON_CACHE: "C:\\electron_cache"
-      ELECTRON_BUILDER_CACHE: "C:\\electron_builder_cache"
+      ELECTRON_CACHE: "C:\electron_cache"
+      ELECTRON_BUILDER_CACHE: "C:\electron_builder_cache"
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}
