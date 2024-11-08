@@ -4,15 +4,11 @@
   "description": "An Electron app to run shell commands with a GUI",
   "main": "main.js",
   "scripts": {
-    "start": "electron-forge start",
+    "start": "webpack serve --mode development",
     "build": "webpack --mode production",
     "electron": "electron .",
     "dev": "npm run start & npm run electron",
-    "dist": "electron-builder",
-    "package": "electron-forge package",
-    "make": "electron-forge make",
-    "publish": "electron-forge publish",
-    "lint": "echo \"No linting configured\""
+    "dist": "electron-builder"
   },
   "build": {
     "appId": "com.example.commandrunner",
@@ -44,15 +40,11 @@
     "@babel/preset-env": "^7.26.0",
     "@babel/preset-react": "^7.25.9",
     "@electron-forge/cli": "^7.5.0",
-    "@electron-forge/maker-deb": "^6.0.0-beta.54",
-    "@electron-forge/maker-rpm": "^6.0.0-beta.54",
-    "@electron-forge/maker-squirrel": "^6.0.0-beta.54",
-    "@electron-forge/maker-zip": "^6.0.0-beta.54",
-    "@electron-forge/publisher-github": "^6.0.0-beta.54",
     "autoprefixer": "^10.4.20",
     "babel-loader": "^9.2.1",
     "css-loader": "^7.1.2",
     "electron": "^23.3.13",
+    "electron-builder": "^25.1.8",
     "electron-rebuild": "^3.2.9",
     "npm-run-all": "^4.1.5",
     "postcss": "^8.4.47",
@@ -66,7 +58,6 @@
   "dependencies": {
     "node-pty": "^1.0.0",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "electron-squirrel-startup": "^1.0.0"
+    "react-dom": "^18.3.1"
   }
 }
