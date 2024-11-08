@@ -39,7 +39,7 @@ jobs:
         run: npm run build
 
       - name: Package application
-        run: npm run make -- --platform=win32 --arch=x64
+        run: npm run make -- --platform=win32 --arch=x64 --targets=@electron-forge/maker-squirrel
 
       - name: Upload Artifacts
         if: success()
