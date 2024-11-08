@@ -1,13 +1,3 @@
-name: Build Electron App
-
-on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
-
 jobs:
   build:
     runs-on: ${{ matrix.os }}
@@ -17,12 +7,21 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v3 # Latest version compatible with Node.js 20
+        uses: actions/checkout@v3
 
       - name: Set up Node.js
-        uses: actions/setup-node@v3 # Latest version compatible with Node.js 20
+        uses: actions/setup-node@v3
         with:
-          node-version: "20" # Specify Node.js version 20
+          node-version: "20"
+
+      - name: Install Python with distutils (macOS only)
+        if: runner.os == 'macOS'
+        run: |
+          brew install python@3.10
+          echo 'export PATH="/opt/homebrew/opt/python@3.10/bin:$PATH"' >> ~/.zshrc
+          source ~/.zshrc
+          python3 -m ensurepip --upgrade
+          python3 -m pip install --upgrade pip setuptools
 
       - name: Install dependencies
         run: npm install
